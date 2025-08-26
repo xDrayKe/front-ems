@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard EMS - Channel Histories</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: #f1f3f4;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            min-width: 150px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .table-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        .session-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .session-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .session-header {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .session-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .session-duration {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .session-content {
+            padding: 0;
+        }
+
+        .event-item {
+            padding: 15px 25px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .event-item:hover {
+            background: #f8f9ff;
+        }
+
+        .event-item:last-child {
+            border-bottom: none;
+        }
+
+        .event-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 18px;
+        }
+
+        .event-join {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .event-switch {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+        }
+
+        .event-leave {
+            background: linear-gradient(45deg, #F44336, #D32F2F);
+        }
+
+        .event-details {
+            flex: 1;
+        }
+
+        .event-message {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .event-time {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .channel-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .user-badge {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .error {
+            background: #ff4444;
+            color: white;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                min-width: auto;
+            }
+
+            .stats {
+                flex-direction: column;
+            }
+
+            .session-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .event-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Liste temps dispatch</h1>
+            <p>Sessions Voice Organisées</p>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="userIdInput" placeholder="Entrez un User ID Discord pour filtrer...">
+            </div>
+            <button class="btn btn-primary" onclick="loadUserLogs()">Rechercher</button>
+            <button class="btn btn-secondary" onclick="loadAllLogs()">Tous les logs</button>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalSessions">0</div>
+                <div class="stat-label">Sessions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="uniqueUsers">0</div>
+                <div class="stat-label">Utilisateurs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalTime">0</div>
+                <div class="stat-label">Temps Total</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div id="loading" class="loading">Chargement des données...</div>
+            <div id="error" class="error" style="display: none;"></div>
+            <div id="sessionsContainer" style="display: none;"></div>
+            <div id="noData" class="no-data" style="display: none;">Aucune session trouvée</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.intranet-samc.site';
+        let currentData = [];
+
+        // Fonction pour formater la durée
+        function formatDuration(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+
+            if (totalSeconds < 60) return `${totalSeconds}s`;
+
+            if (totalSeconds < 3600) {
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                return `${minutes}m ${seconds}s`;
+            }
+
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return `${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        // Fonction pour formater les dates
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Fonction pour formater le temps court
+        function formatTimeShort(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('fr-FR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // Fonction pour organiser les données en sessions
+        function organizeSessions(data) {
+            const sessions = [];
+            const userSessions = {};
+
+            // Trier les données par utilisateur et par date
+            const sortedData = data.sort((a, b) => {
+                if (a.userId !== b.userId) return a.userId.localeCompare(b.userId);
+                return new Date(a.createdAt) - new Date(b.createdAt);
+            });
+
+            for (const log of sortedData) {
+                const userId = log.userId;
+
+                if (!userSessions[userId]) {
+                    userSessions[userId] = [];
+                }
+
+                if (log.type === 'voice_join') {
+                    // Début d'une nouvelle session
+                    userSessions[userId].push({
+                        userId: userId,
+                        startTime: log.createdAt,
+                        events: [log],
+                        totalDuration: 0,
+                        channels: new Set([log.channelId])
+                    });
+                } else if (userSessions[userId].length > 0) {
+                    // Ajouter l'événement à la session actuelle
+                    const currentSession = userSessions[userId][userSessions[userId].length - 1];
+                    currentSession.events.push(log);
+                    currentSession.channels.add(log.channelId);
+
+                    if (log.type === 'voice_leave') {
+                        // Fin de session, calculer la durée totale
+                        const startTime = new Date(currentSession.startTime);
+                        const endTime = new Date(log.createdAt);
+                        currentSession.totalDuration = endTime - startTime;
+                        currentSession.endTime = log.createdAt;
+                    }
+                }
+            }
+
+            // Convertir en array et trier par date
+            for (const userId in userSessions) {
+                sessions.push(...userSessions[userId]);
+            }
+
+            return sessions.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+        }
+
+        // Fonction pour créer le HTML d'une session
+        function createSessionHTML(session) {
+            const events = session.events;
+            const hasEnd = session.totalDuration > 0;
+
+            let eventsHTML = '';
+
+            for (const event of events) {
+                let icon, iconClass, message;
+
+                switch (event.type) {
+                    case 'voice_join':
+                        icon = '🎤';
+                        iconClass = 'event-join';
+                        message = `<span class="user-badge">${event.userId}</span> s'est connecté sur <span class="channel-badge">${event.channel || event.channelId}</span>`;
+                        break;
+                    case 'voice_switch':
+                        icon = '🔄';
+                        iconClass = 'event-switch';
+                        message = `<span class="user-badge">${event.userId}</span> a changé pour <span class="channel-badge">${event.channel || event.channelId}</span>`;
+                        break;
+                    case 'voice_leave':
+                        icon = '🔇';
+                        iconClass = 'event-leave';
+                        message = `<span class="user-badge">${event.userId}</span> s'est déconnecté du vocal`;
+                        break;
+                    default:
+                        icon = '📝';
+                        iconClass = 'event-join';
+                        message = `<span class="user-badge">${event.userId}</span> - ${event.type}`;
+                }
+
+                eventsHTML += `
+                    <div class="event-item">
+                        <div class="event-icon ${iconClass}">${icon}</div>
+                        <div class="event-details">
+                            <div class="event-message">${message}</div>
+                            <div class="event-time">${formatDate(event.createdAt)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const sessionTitle = hasEnd
+                ? `Session vocal - ${formatDate(session.startTime)} → ${formatTimeShort(session.endTime)}`
+                : `Session en cours - ${formatDate(session.startTime)}`;
+
+            const durationText = hasEnd
+                ? formatDuration(session.totalDuration)
+                : 'En cours...';
+
+            return `
+                <div class="session-card">
+                    <div class="session-header">
+                        <div class="session-title">${sessionTitle}</div>
+                        <div class="session-duration">${durationText}</div>
+                    </div>
+                    <div class="session-content">
+                        ${eventsHTML}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Fonction pour afficher les sessions
+        function displaySessions(sessions) {
+            const container = document.getElementById('sessionsContainer');
+            const loadingDiv = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            const noDataDiv = document.getElementById('noData');
+
+            loadingDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
+            noDataDiv.style.display = 'none';
+
+            if (!sessions || sessions.length === 0) {
+                noDataDiv.style.display = 'block';
+                container.style.display = 'none';
+                return;
+            }
+
+            const sessionsHTML = sessions.map(session => createSessionHTML(session)).join('');
+            container.innerHTML = sessionsHTML;
+            container.style.display = 'block';
+
+            updateStats(sessions);
+        }
+
+        // Fonction pour mettre à jour les statistiques
+        function updateStats(sessions) {
+            const totalSessions = sessions.length;
+            const uniqueUsers = new Set(sessions.map(session => session.userId)).size;
+            let totalTimeMs = 0;
+
+            for (const session of sessions) {
+                if (session.totalDuration > 0) {
+                    totalTimeMs += session.totalDuration;
+                }
+            }
+
+            document.getElementById('totalSessions').textContent = totalSessions;
+            document.getElementById('uniqueUsers').textContent = uniqueUsers;
+            document.getElementById('totalTime').textContent = formatDuration(totalTimeMs);
+        }
+
+        // Fonction pour afficher une erreur
+        function showError(message) {
+            const loadingDiv = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            const container = document.getElementById('sessionsContainer');
+            const noDataDiv = document.getElementById('noData');
+
+            loadingDiv.style.display = 'none';
+            container.style.display = 'none';
+            noDataDiv.style.display = 'none';
+            errorDiv.textContent = `Erreur: ${message}`;
+            errorDiv.style.display = 'block';
+        }
+
+        // Charger tous les logs
+        async function loadAllLogs() {
+            const loadingDiv = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            const container = document.getElementById('sessionsContainer');
+            const noDataDiv = document.getElementById('noData');
+
+            loadingDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            container.style.display = 'none';
+            noDataDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/logs`);
+                const result = await response.json();
+
+                if (result.success) {
+                    currentData = result.data;
+                    const sessions = organizeSessions(result.data);
+                    displaySessions(sessions);
+                    document.getElementById('userIdInput').value = '';
+                } else {
+                    showError(result.error || 'Erreur lors du chargement des données');
+                }
+            } catch (error) {
+                showError(`Erreur de connexion: ${error.message}`);
+            }
+        }
+
+        // Charger les logs d'un utilisateur
+        async function loadUserLogs() {
+            const userId = document.getElementById('userIdInput').value.trim();
+
+            if (!userId) {
+                console.log('Veuillez entrer un User ID Discord');
+                return;
+            }
+
+            const loadingDiv = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            const container = document.getElementById('sessionsContainer');
+            const noDataDiv = document.getElementById('noData');
+
+            loadingDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            container.style.display = 'none';
+            noDataDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/logs/${userId}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    currentData = result.data;
+                    const sessions = organizeSessions(result.data);
+                    displaySessions(sessions);
+                } else {
+                    showError(result.message || result.error || 'Aucun log trouvé pour cet utilisateur');
+                }
+            } catch (error) {
+                showError(`Erreur de connexion: ${error.message}`);
+            }
+        }
+
+        // Recherche avec la touche "Entrée"
+        document.getElementById('userIdInput').addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                loadUserLogs();
+            }
+        });
+
+        // Charger tous les logs au démarrage
+        loadAllLogs();
+    </script>
+
+</body>
+
+</html>
